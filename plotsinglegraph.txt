@@ -1,0 +1,84 @@
+import sys
+
+import numpy as np
+import pandas as pd
+from numpy import matrix
+import matplotlib.pyplot as plt
+
+import pandas as pd
+from numpy import matrix
+
+
+n=50
+a=np.zeros((n,10))
+b=np.zeros((n,10))
+c=np.zeros((n,10))
+a1=np.zeros(n)
+b1=np.zeros(n)
+c1=np.zeros(n)
+d1=np.zeros(n)
+d=np.zeros(n)
+f=np.zeros(n)
+df = pd.read_excel('data40.xlsx')
+x = pd.read_excel('data40.xlsx',sheet_name = 'varyk60fixed_1.65',header=None)
+z = pd.read_excel('data40.xlsx',sheet_name = 'varyk60fixed_1.65random',header=None)
+x=np.array(x)
+z=np.array(z)
+
+for q in range(50):
+    d[q] = (0.02) * q
+    d1[q] = (0.01) * q
+
+
+
+    a1[q]=x[3*q]
+    b1[q] = x[(3 * q) +1]
+    c1[q] = x[(3 * q)+2]
+    for i in range(10):
+
+        a[q][i]=z[3*q][i]
+        b[q][i] = z[(3 * q) +1][i]
+        c[q][i] = z[(3 * q)+2][i]
+
+
+for r in range (10):
+
+    plt.scatter(d1,c[:,r],marker=".",color='r')
+
+plt.plot(d,c1)
+plt.scatter(d,c1)
+plt.legend(["Uniform initials","Random initials"])
+plt.title('Synchronisation index')
+    #plt.xlabel('α(phase lag)')
+plt.xlabel('k')
+plt.ylabel('Synchronisation index')
+    #plt.axvline(x = 1.5, color = 'black', linestyle='--')
+    #plt.axvline(x = 2, color = 'black',linestyle='--')
+
+plt.show()
+for r in range (10):
+
+    plt.scatter(d1,a[:,r],marker=".",color='r')
+plt.plot(d,a1)
+plt.scatter(d,a1)
+plt.legend(["Uniform initials","Random initials"])
+plt.title('Metastability index')
+    #plt.xlabel('α(phase lag)')
+plt.xlabel('k')
+plt.ylabel('Metastability index')
+    #plt.axvline(x = 1.5, color = 'black', linestyle='--')
+    #plt.axvline(x = 2, color = 'black',linestyle='--')
+
+plt.show()
+for r in range (10):
+    plt.scatter(d1,b[:,r],marker=".",color='r')
+plt.plot(d,b1)
+plt.scatter(d,b1)
+plt.title('Chimera index')
+plt.legend(["Uniform initials","Random initials"])
+    #plt.xlabel('α(phase lag)')
+plt.xlabel('k')
+plt.ylabel('Chimera index')
+    #plt.axvline(x = 1.5, color = 'black', linestyle='--')
+    #plt.axvline(x = 2, color = 'black',linestyle='--')
+plt.show()

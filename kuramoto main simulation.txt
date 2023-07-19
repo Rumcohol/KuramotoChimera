@@ -1,0 +1,132 @@
+import numpy as np
+from numpy import random
+import matplotlib.pyplot as plt
+# Parameters
+e=100
+arr = np.zeros(e)
+chir=np.zeros(e)
+phir=np.zeros(e)
+lmbdar=np.zeros(e)
+
+
+
+
+
+# phase lag parameter (beta) - default is 0.1
+b=0.1
+a =2  #2  # phase lag (alpha)
+
+
+
+
+ # coupling parameter - default is 0.2
+k=1
+k1 = (1-k)/2  # inter-community coupling strength
+k0 = (1+k)/2  # intra-community coupling strength
+
+n0 = 40  # community size
+n1 = 5 # number of communities
+n_tot = n0 * n1  # total number of oscillators
+
+d0 = 40  # number of intra-community connections
+d1 = 40  # number of inter-community connections
+
+
+
+
+
+# Coupling matrix
+
+def build_matrix(n0, n1, d0, d1, k0, k1):
+
+  n_tot = n0 * n1  # total number of oscillators
+  K = np.zeros((n_tot, n_tot))
+  for i in range(n_tot):
+    x1 = np.mod(np.ceil(i / n0) - 1, n1) + 1  # community number
+    for j in range(i + 1, n_tot):
+      if i != j:  # ignore diagonals
+        y1 = np.mod(np.ceil(j / n0) - 1, n1) + 1  # community number
+        if x1 == y1:  # same community
+          p = d0 / n0
+          k = k0
+        else:  # different communities
+          p = d1 / (n0 * n1)
+          k = k1
+        if random.uniform() < 20*p:
+          K[i, j] = k
+          K[j, i] = k
+  return K
+
+
+def kuramoto(theta, t, w, K, a, Dmean):
+#'''Simulate the Kuramoto model using 4th-order Runge-Kutta method.'''
+  h = 0.05  # step size
+  hby2 = 0.5 * h
+  temp1 = theta[t-1, :]
+  for j in range(1, int(1 / h)):
+    temp2 = temp1
+    for i in range(n_tot):
+  # Numerical simulation using 4th-order Runge-Kutta method
+      rk1 = w[i] + np.dot(K[i], np.sin(temp2 - temp1[i] - a) / Dmean)
+      rk2 = w[i] + np.dot(K[i], np.sin(temp2 - (temp1[i] + hby2 * rk1) - a) / Dmean)
+      rk3 = w[i] + np.dot(K[i], np.sin(temp2 - (temp1[i] + hby2 * rk2) - a) / Dmean)
+      rk4 = w[i] + np.dot(K[i], np.sin(temp2 - (temp1[i] + h * rk3) - a) / Dmean)
+      temp1[i] += h * (rk1 + 2 * rk2 + 2 * rk3 + rk4) / 6
+  theta[t, :] = temp1
+  return theta
+
+
+def get_stats(sync, ws):
+# '''Calculate metastability and chimera index.'''
+  sync2 = sync[200 // ws:]  # ignore first 200 time steps
+  lmbda = np.mean(np.var(np.transpose(sync2), axis=-1))
+  chi = np.mean(np.var(sync2, axis=-1))
+  phi = np.mean(sync2)
+  return (lmbda, chi, phi)
+def main():
+
+# Set up
+  w = np.ones(n_tot)  # identical natural frequencies
+  t_tot = 500  # number of time steps
+  ws = 2  # window size for downsampling synchrony data - default is 2
+  theta = np.zeros((t_tot, n_tot))  # oscillator phases
+  #theta[0] = random.uniform(size=n_tot) * 2 * np.pi - np.pi  # random initial phases
+  theta[0] =  np.linspace(0, 2*np.pi, n_tot)
+  Dmean = d0 + d1  # average connections per oscillator
+  phi = np.zeros((t_tot, n1))  # synchrony data
+  tot_phi = np.zeros(n1)  # running total for synchrony over window
+  sync = np.zeros((t_tot // ws, n1))  # downsampled synchrony data
+  K = build_matrix(n0, n1, d0, d1, k0, k1)  # coupling matrix
+
+  for t in range(1, t_tot):
+
+# Kuramoto model
+    theta = kuramoto(theta, t, w, K, a, Dmean)
+# Normalise phases
+    theta[t, :] = np.mod(theta[t, :] + np.pi, 2 * np.pi) - np.pi
+
+# Compute synchrony within communities
+    theta2 = np.reshape(theta, (t_tot, n1, n0))[t]
+    phi[t, :] = np.absolute(np.mean(np.exp(theta2 * 1j), axis=-1))
+
+# Running total synchronies in downsampling window
+    if (t + 1) % ws == 0:
+      tot_phi += phi[t, :]
+      sync[t // ws, :] = tot_phi / ws  # average synchrony
+      tot_phi = np.zeros(n1)
+    else:
+      tot_phi += phi[t, :]
+
+# Plotting
+    #if (t + 1) % 100 == 0:
+    #plot_syncs(sync, t, t_tot, ws)
+    #plot_phases(theta, t, n0, n1)
+
+# Display statistics for run
+  (lmbda, chi, phi) = get_stats(sync, ws)
+  print(lmbda,chi,phi)
+  #print('Metastability = ',(lmbda))
+  #print('Chimera index = ',(chi))
+  #print('Mean synchrony = ',(phi))
+
+main()

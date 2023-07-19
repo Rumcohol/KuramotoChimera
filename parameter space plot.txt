@@ -1,0 +1,54 @@
+import sys
+
+import numpy as np
+import pandas as pd
+from numpy import matrix
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+import pandas as pd
+from numpy import matrix
+a=np.zeros(800)
+a1=np.zeros(800)
+x = pd.read_excel('data40.xlsx',sheet_name = 'kbetagraphraju',header=None)
+x1 = pd.read_excel('data40.xlsx',sheet_name = 'k-betagraphgullu',header=None)
+x=np.array(x)
+x1=np.array(x1)
+
+a1=x1[:,1]
+#print(x[:,2])
+r=np.zeros((20,40))
+r1=np.zeros((20,40))
+diff=np.zeros((20,40))
+for q in range(20):
+    for j in range(40):
+        r[19-q][j] = (a[(40 * (q))+j])
+        r1[19 - q][j] = np.log(a1[(40 * (q)) + j])
+
+d=np.linspace(0,2,40)
+
+print(diff)
+#print(r)
+for i in range(1,20):
+    d=np.linspace(0,2,40)
+    #plt.scatter (d,r[i])
+    plt.xlim([1.5,1.8])
+    #plt.scatter(d, r[i],color=(0.4,(i/21),(i/21)))
+    #plt.plot (d,r[i],color=(0.4,(i/21),(i/21)))
+
+#plt.show()
+
+plt.figure(figsize=(12, 6), dpi=120)
+#Various color patterns can be chosen, he we chose binary simplification
+plt.imshow(r1, alpha=1,cmap='seismic',extent=[0,2,0,1] )
+plt.clim(-25,0)
+plt.colorbar()
+plt.xlabel('Frustation parameter α(alpha)')
+plt.ylabel('Coupling parameter k')
+#plt.title('log scale-Metastability index log(λ)-Config 2')
+plt.title('log scale-Chimera index log(χ)-Config 2')
+#plt.title('Synchronisation index R- Config 2')
+
+plt.show()
+#plt.imshow(X, alpha=10,cmap='seismic' )
+#plt.imshow(X, alpha=10,cmap='bwr' )
